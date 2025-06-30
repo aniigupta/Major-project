@@ -23,6 +23,7 @@ const Login = () => {
 
   const loginSubmitHandler = async (e: FormEvent) => {
     e.preventDefault();
+
     const result = userLoginSchema.safeParse(input);
     if (!result.success) {
       const fieldErrors = result.error.formErrors.fieldErrors;
@@ -34,6 +35,7 @@ const Login = () => {
       await login(input);
       // ✅ Only navigate if login was successful
       if (useUserStore.getState().isAuthenticated) {
+        
         navigate("/");
       }
     } catch (error) {

@@ -1,4 +1,8 @@
+import { useCartStore } from "@/store/useCartStore";
+import { CartItem } from "@/types/cartType";
 import { Minus, Plus } from "lucide-react";
+import { useState } from "react";
+import CheckoutConfirmPage from "./CheckoutConfirmPage";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
 import {
@@ -10,14 +14,12 @@ import {
   TableHeader,
   TableRow,
 } from "./ui/table";
-import { useState } from "react";
-import CheckoutConfirmPage from "./CheckoutConfirmPage";
-import { useCartStore } from "@/store/useCartStore";
-import { CartItem } from "@/types/cartType";
+
 
 const Cart = () => {
+
+  const { cart, decrementQuantity, incrementQuantity, clearCart, removeFromTheCart } = useCartStore();
   const [open, setOpen] = useState<boolean>(false);
-  const { cart, decrementQuantity, incrementQuantity } = useCartStore();
 
   let totalAmount = cart.reduce((acc, ele) => {
     return acc + ele.price * ele.quantity;
@@ -25,7 +27,10 @@ const Cart = () => {
   return (
     <div className="flex flex-col max-w-7xl mx-auto my-10">
       <div className="flex justify-end">
-        <Button variant="link">Clear All</Button>
+        <Button variant="link" onClick={clearCart}>
+          Clear All
+        </Button>
+
       </div>
       <Table>
         <TableHeader>
@@ -52,7 +57,7 @@ const Cart = () => {
               <TableCell>
                 <div className="w-fit flex items-center rounded-full border border-gray-100 dark:border-gray-800 shadow-md">
                   <Button
-                  onClick={() => decrementQuantity(item._id)}
+                    onClick={() => decrementQuantity(item._id)}
                     size={"icon"}
                     variant={"outline"}
                     className="rounded-full bg-gray-200"
@@ -68,7 +73,7 @@ const Cart = () => {
                     {item.quantity}
                   </Button>
                   <Button
-                  onClick={() => incrementQuantity(item._id)}
+                    onClick={() => incrementQuantity(item._id)}
                     size={"icon"}
                     className="rounded-full bg-orange hover:bg-hoverOrange"
                     variant={"outline"}
@@ -79,7 +84,11 @@ const Cart = () => {
               </TableCell>
               <TableCell>{item.price * item.quantity}</TableCell>
               <TableCell className="text-right">
-                <Button size={"sm"} className="bg-orange hover:bg-hoverOrange">
+                <Button
+                  size={"sm"}
+                  className="bg-orange hover:bg-hoverOrange"
+                  onClick={() => removeFromTheCart(item._id)}
+                >
                   Remove
                 </Button>
               </TableCell>
