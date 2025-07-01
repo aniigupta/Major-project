@@ -88,27 +88,27 @@ export const useUserStore = create<UserState>()(
         }
       },
 
-      // verifyEmail: async (verificationCode) => {
-      //   try {
-      //     set({ loading: true });
-      //     const response = await axios.post(
-      //       `${API_END_POINT}/verify-email`,
-      //       { verificationCode },
-      //       { headers: { "Content-Type": "application/json" } }
-      //     );
-      //     if (response.data.success) {
-      //       toast.success(response.data.message);
-      //       set({
-      //         loading: false,
-      //         user: response.data.user,
-      //         isAuthenticated: true,
-      //       });
-      //     }
-      //   } catch (error: any) {
-      //     toast.error(error.response?.data?.message || "Verification failed");
-      //     set({ loading: false });
-      //   }
-      // },
+      verifyEmail: async (verificationCode) => {
+        try {
+          set({ loading: true });
+          const response = await axios.post(
+            `${API_END_POINT}/verify-email`,
+            { verificationCode },
+            { headers: { "Content-Type": "application/json" } }
+          );
+          if (response.data.success) {
+            toast.success(response.data.message);
+            set({
+              loading: false,
+              user: response.data.user,
+              isAuthenticated: true,
+            });
+          }
+        } catch (error: any) {
+          toast.error(error.response?.data?.message || "Verification failed");
+          set({ loading: false });
+        }
+      },
 
       checkAuthentication: async () => {
         try {
