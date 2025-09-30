@@ -26,7 +26,7 @@ type UserState = {
   loading: boolean;
   signup: (input: SignupInputState) => Promise<void>;
   login: (input: LoginInputState) => Promise<void>;
-  // verifyEmail: (verificationCode: string) => Promise<void>;
+  verifyEmail: (verificationCode: string) => Promise<void>;
   checkAuthentication: () => Promise<void>;
   logout: () => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
@@ -121,8 +121,17 @@ export const useUserStore = create<UserState>()(
               isCheckingAuth: false,
             });
           }
-        } catch {
-          set({ isAuthenticated: false, isCheckingAuth: false });
+        } catch (error: any) {
+          if (error.response?.status === 401) {
+            set({
+              user: null,
+              isAuthenticated: false,
+              isCheckingAuth: false,
+            });
+          } else {
+            console.error("Check auth failed:", error);
+            set({ isCheckingAuth: false });
+          }
         }
       },
 

@@ -20,37 +20,35 @@ import { useEffect } from "react";
 import Loading from "./components/Loading";
 import { useThemeStore } from "./store/useThemeStore";
 
+// ✅ Protected routes (only logged-in users)
 const ProtectedRoutes = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useUserStore();
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
-
-  // if (!user?.isVerified) {
-  //   return <Navigate to="/verify-email" replace />;
-  // }
   return children;
 };
 
+// ✅ If user is already logged in & verified → redirect away from auth pages
 const AuthenticatedUser = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, user } = useUserStore();
-  if(isAuthenticated && user?.isVerified){
-    return <Navigate to="/" replace/>
+  if (isAuthenticated && user?.isVerified) {
+    return <Navigate to="/" replace />;
   }
   return children;
 };
 
-const AdminRoute = ({children}:{children:React.ReactNode}) => {
-  const {user, isAuthenticated} = useUserStore();
-  if(!isAuthenticated){
-    return <Navigate to="/login" replace/>
+// ✅ Admin-only route
+const AdminRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, isAuthenticated } = useUserStore();
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
   }
-  if(!user?.admin){
-    return <Navigate to="/" replace/>
+  if (!user?.admin) {
+    return <Navigate to="/" replace />;
   }
-
   return children;
-}
+};
 
 const appRouter = createBrowserRouter([
   {
@@ -61,80 +59,44 @@ const appRouter = createBrowserRouter([
       </ProtectedRoutes>
     ),
     children: [
-      {
-        path: "/",
-        element: <HereSection />,
-      },
-      {
-        path: "/profile",
-        element: <Profile />,
-      },
-      {
-        path: "/search/:text",
-        element: <SearchPage />,
-      },
-      {
-        path: "/restaurant/:id",
-        element: <RestaurantDetail />,
-      },
-      {
-        path: "/cart",
-        element: <Cart />,
-      },
-      {
-        path: "/order/status",
-        element: <Success />,
-      },
-      // admin services start from here
-      {
-        path: "/admin/restaurant",
-        element:<AdminRoute><Restaurant /></AdminRoute>,
-      },
-      {
-        path: "/admin/menu",
-        element:<AdminRoute><AddMenu /></AdminRoute>,
-      },
-      {
-        path: "/admin/orders",
-        element:<AdminRoute><Orders /></AdminRoute>,
-      },
+      { path: "/", element: <HereSection /> },
+      { path: "/profile", element: <Profile /> },
+      { path: "/search/:text", element: <SearchPage /> },
+      { path: "/restaurant/:id", element: <RestaurantDetail /> },
+      { path: "/cart", element: <Cart /> },
+      { path: "/order/status", element: <Success /> },
+      // admin routes
+      { path: "/admin/restaurant", element: <AdminRoute><Restaurant /></AdminRoute> },
+      { path: "/admin/menu", element: <AdminRoute><AddMenu /></AdminRoute> },
+      { path: "/admin/orders", element: <AdminRoute><Orders /></AdminRoute> },
     ],
   },
-  {
-    path: "/login",
-    element:<AuthenticatedUser><Login /></AuthenticatedUser>,
-  },
-  {
-    path: "/signup",
-    element:<AuthenticatedUser><Signup /></AuthenticatedUser> ,
-  },
-  {
-    path: "/forgot-password",
-    element: <AuthenticatedUser><ForgotPassword /></AuthenticatedUser>,
-  },
-  {
-    path: "/reset-password",
-    element: <ResetPassword />,
-  },
-  // {
-  //   path: "/verify-email",
-  //   element: <VerifyEmail />,
-  // },
+  { path: "/login", element: <AuthenticatedUser><Login /></AuthenticatedUser> },
+  { path: "/signup", element: <AuthenticatedUser><Signup /></AuthenticatedUser> },
+  { path: "/forgot-password", element: <AuthenticatedUser><ForgotPassword /></AuthenticatedUser> },
+  { path: "/reset-password", element: <ResetPassword /> },
+  // { path: "/verify-email", element: <VerifyEmail /> },
 ]);
 
 function App() {
-  const initializeTheme = useThemeStore((state:any) => state.initializeTheme);
-  const {checkAuthentication, isCheckingAuth} = useUserStore();
-  // checking auth every time when page is loaded
-  useEffect(()=>{
-    checkAuthentication();
-    initializeTheme();
-  },[checkAuthentication])
+  const initializeTheme = useThemeStore((state: any) => state.initializeTheme);
+  const { checkAuthentication, isCheckingAuth } = useUserStore();
 
-  if(isCheckingAuth) return <Loading/>
+  useEffect(() => {
+    const publicRoutes = ["/login", "/signup", "/forgot-password", "/reset-password"];
+    const currentPath = window.location.pathname;
+
+    if (!publicRoutes.includes(currentPath)) {
+      checkAuthentication();
+    }
+    initializeTheme();
+  }, [checkAuthentication, initializeTheme]);
+
+  if (isCheckingAuth) return <Loading />;
+
   return (
     <main>
-      <RouterProvider router={appRouter}></RouterProvider>
+      <RouterProvider router={appRouter} />
     </main>
   );
 }

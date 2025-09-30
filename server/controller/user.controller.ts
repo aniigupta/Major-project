@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { User } from "../models/user.model";
 import bcrypt from "bcryptjs";
-import crypto from "crypto"; 
+import crypto from "crypto";
 import cloudinary from "../utils/cloudinary";
 import { generateVerificationCode } from "../utils/generateVerificationCode";
 import { generateToken } from "../utils/generateToken";
@@ -26,11 +26,11 @@ export const signup = async (req: Request, res: Response) => {
             email,
             password: hashedPassword,
             contact: Number(contact),
-             isVerified: true,
+            isVerified: true,
             // verificationToken,
             // verificationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000,
         })
-        generateToken(res,user);
+        generateToken(res, user);
 
         // await sendVerificationEmail(email, verificationToken);
 
@@ -41,8 +41,8 @@ export const signup = async (req: Request, res: Response) => {
             user: userWithoutPassword
         });
     } catch (error) {
-    // console.error("Signup Error:", error);
-    return res.status(500).json({ message: "Internal server error" });
+        // console.error("Signup Error:", error);
+        return res.status(500).json({ message: "Internal server error" });
     }
 };
 export const login = async (req: Request, res: Response) => {
@@ -81,7 +81,7 @@ export const login = async (req: Request, res: Response) => {
 export const verifyEmail = async (req: Request, res: Response) => {
     try {
         const { verificationCode } = req.body;
-       
+
         const user = await User.findOne({ verificationToken: verificationCode, verificationTokenExpiresAt: { $gt: Date.now() } }).select("-password");
 
         if (!user) {
@@ -203,20 +203,24 @@ export const updateProfile = async (req: Request, res: Response) => {
     try {
         const userId = req.id;
         const { fullname, email, address, city, country, profilePicture } = req.body;
-        // upload image on cloudinary
-        let cloudResponse: any;
-        cloudResponse = await cloudinary.uploader.upload(profilePicture);
-        const updatedData = {fullname, email, address, city, country, profilePicture};
 
-        const user = await User.findByIdAndUpdate(userId, updatedData,{new:true}).select("-password");
+        let updatedData: any = { fullname, email, address, city, country };
+
+        if (profilePicture) {
+            const cloudResponse = await cloudinary.uploader.upload(profilePicture);
+            updatedData.profilePicture = cloudResponse.secure_url;
+        }
+
+        const user = await User.findByIdAndUpdate(userId, updatedData, { new: true }).select("-password");
 
         return res.status(200).json({
-            success:true,
+            success: true,
             user,
-            message:"Profile updated successfully"
+            message: "Profile updated successfully",
         });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: "Internal server error" });
     }
-}
+};
+

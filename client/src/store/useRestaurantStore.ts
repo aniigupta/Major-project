@@ -36,13 +36,23 @@ export const useRestaurantStore = create<RestaurantState>()(persist((set, get) =
     getRestaurant: async () => {
         try {
             set({ loading: true });
-            const response = await axios.get(`${API_END_POINT}/`);
+            const response = await axios.get(`${API_END_POINT}/`, {
+                withCredentials: true,
+                headers: {
+                    'Accept': 'application/json',
+                }
+            });
             if (response.data.success) {
                 set({ loading: false, restaurant: response.data.restaurant });
             }
         } catch (error: any) {
-            if (error.response.status === 404) {
+            if (error.response?.status === 401) {
+                console.error('Authentication error:', error.response.data.message);
                 set({ restaurant: null });
+            } else if (error.response?.status === 404) {
+                set({ restaurant: null });
+            } else {
+                console.error('Error fetching restaurant:', error);
             }
             set({ loading: false });
         }
